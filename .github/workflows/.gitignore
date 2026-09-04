@@ -1,0 +1,26 @@
+# CCET source workbooks
+*.xlsx
+*.xls
+
+# Generated dashboard data
+site/data/*.json
+!site/data/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Node / JavaScript dependencies
+node_modules/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
