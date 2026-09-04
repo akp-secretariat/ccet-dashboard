@@ -1,0 +1,60 @@
+name: Build and Deploy CCET Dashboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub Actions cron uses UTC. 00:15 UTC = 08:15 Manila time.
+    - cron: "15 0 * * *"
+  push:
+    branches: ["main"]
+    paths:
+      - "site/**"
+      - "scripts/**"
+      - "requirements.txt"
+      - ".github/workflows/build-deploy.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+environment:
+  name: github-pages
+  url: ${{ steps.deployment.outputs.page_url }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install data-build dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build dashboard data from the official Excel source
+        env:
+          CCET_XLSX_URL: ${{ vars.CCET_XLSX_URL }}
+        run: python scripts/build_data.py --out site/data
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload generated site to Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
